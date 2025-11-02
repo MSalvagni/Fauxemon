@@ -1,0 +1,7 @@
+principal = 240_000
+annual_rate = 0.05
+years = 2
+
+compount_intrest = principal * (1 + annual_rate)  ** years
+
+print(compount_intrest)
