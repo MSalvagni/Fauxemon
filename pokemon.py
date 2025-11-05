@@ -1,3 +1,6 @@
+import random
+import time
+
 class Pokemon:
     #These are the attributes that can be stores by the pokemon 
     #Can add moves, speed, defense, or whatever else
@@ -56,9 +59,11 @@ def choose_starter():
                 confirm = input(f"Are you sure about {chosen_pokemon}? (y/n) " )
                 if confirm == "y":
                     print(f"You chose {chosen_pokemon.name}!")
+                    time.sleep(1)
                     rival_choice = type_advantage[chosen_pokemon.name]
                     rival_pokemon = next(p for p in pokemons if p.name == rival_choice)
                     print(f"Your rival has chosen {rival_pokemon.name}.")
+                    time.sleep(1)
                     return chosen_pokemon, rival_pokemon  
                 elif confirm == "n":
                     print("Okay, pick again.")
@@ -68,25 +73,47 @@ def choose_starter():
         else:
             print("Make a valid choice")
 
+def take_turn(attacker, defender):
+    damage = random.randint(5, 10)
+    defender.take_damage(damage)
+    print(f"{attacker.name} attacks! {defender.name} loses {damage} HP")
+    time.sleep(1)
+    print(f"{defender.name} has {defender.hp} HP left!\n")
+    time.sleep(1)
+
+
 def battle(player_pokemon, rival_pokemon):
     print(f"Battle is about to begin between your {player_pokemon.name} and your rival's {rival_pokemon.name}")
+    time.sleep(1)
 
-    while True:
-        battle_confirm = input("Are you ready? (y/n) ")
-
-        if battle_confirm == "y":
-            print("Battle begins")
-            break
-        elif battle_confirm == "n":
-            print("I guess we can wait")
+    while not player_pokemon.hp == 0 and not rival_pokemon.hp == 0:
+        print(f"Your pokemon: {player_pokemon}")
+        print(f"Rival's pokemon: {rival_pokemon}\n")
+        action = input("Choose your action:\n1) Attack\n")
+        if action == "1":
+            take_turn(player_pokemon, rival_pokemon)
         else:
             print("Make a valid choice")
+            continue
+
+
+        #Check if a pokemon faints
+        if rival_pokemon.hp == 0:
+            print(f"{rival_pokemon.name} has fainted. You won the battle!")
+            break
+
+        take_turn(rival_pokemon, player_pokemon)
+
+        if player_pokemon.hp == 0:
+            print(f"Your pokemon fainted!")
+            break
 
 
 def start_game():
     player_name = ask_name()
     print(f"Welcome Trainer, {player_name}")
     player_pokemon, rival_pokemon = choose_starter()
+    time.sleep(1)
     battle(player_pokemon, rival_pokemon)
 
 
