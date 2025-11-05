@@ -4,10 +4,11 @@ import time
 class Pokemon:
     #These are the attributes that can be stores by the pokemon 
     #Can add moves, speed, defense, or whatever else
-    def __init__(self, name, hp, moves):
+    def __init__(self, name, hp, moves, speed):
         self.name = name
         self.hp = hp
         self.moves = moves
+        self.speed = speed
 
     def __str__(self):
         return f"{self.name} (HP: {self.hp})"
@@ -16,10 +17,10 @@ class Pokemon:
         self.hp = max(0,self.hp - amount)
 
 moves = {
-    "Tackle":(5, 10),
-    "Vine Whip": (8,12),
-    "Ember": (8, 12),
-    "Water Gun": (8,12)
+    "Tackle":(5, 10, 90),
+    "Vine Whip": (8,12, 90),
+    "Ember": (8, 12, 90),
+    "Water Gun": (8, 12, 90)
 }
     
 
@@ -41,9 +42,9 @@ def ask_name():
 
 def choose_starter():
     pokemons = [
-        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"]),
-        Pokemon("Charmander", 39, ["Tackle", "Ember"]),
-        Pokemon("Squirtle", 44,["Tackle", "Water Gun"])
+        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"], 45),
+        Pokemon("Charmander", 39, ["Tackle", "Ember"], 65),
+        Pokemon("Squirtle", 44,["Tackle", "Water Gun"], 43)
         ]
 
     type_advantage = {
@@ -84,13 +85,16 @@ def choose_starter():
             print("Make a valid choice")
 
 def take_turn(attacker, defender, move_name):
-    low, high = moves[move_name]
-    damage = random.randint(low, high)
-    defender.take_damage(damage)
-    print(f"{attacker.name} attacks with {move_name}! {defender.name} loses {damage} HP")
-    time.sleep(1)
-    print(f"{defender.name} has {defender.hp} HP left!\n")
-    time.sleep(1)
+    low, high, accuracy = moves[move_name]
+    if random.randint(1, 100) <= accuracy:
+        damage = random.randint(low, high)
+        defender.take_damage(damage)
+        print(f"{attacker.name} attacks with {move_name}! {defender.name} loses {damage} HP")
+        time.sleep(1)
+        print(f"{defender.name} has {defender.hp} HP left!\n")
+        time.sleep(1)
+    else:
+        print(f"{attacker.name}'s attack missed!")
 
 def battle(player_pokemon, rival_pokemon):
     is_Trainer = True
@@ -110,8 +114,27 @@ def battle(player_pokemon, rival_pokemon):
             choice = int(input(">")) - 1
             chosen_move = player_pokemon.moves[choice]
 
-            
-            take_turn(player_pokemon, rival_pokemon, chosen_move)
+            rival_move = random.choice(rival_pokemon.moves)
+            ## turn based system with speed. seems not optimal..
+            if player_pokemon.speed >= rival_pokemon.speed:
+                take_turn(player_pokemon, rival_pokemon, chosen_move)
+                if rival_pokemon.hp <= 0:
+                    print(f"Rival's {rival_pokemon.name} has fainted")
+                    break
+                take_turn(rival_pokemon, player_pokemon, rival_move)
+                if player_pokemon.hp <= 0:
+                    print(f"Your {player_pokemon.name} has fainted!")
+                    break
+            else:
+                take_turn(rival_pokemon, player_pokemon, rival_move)
+                if player_pokemon.hp <= 0:
+                    print(f"Your {player_pokemon.name} fainted!")
+                    break
+                take_turn(player_pokemon, rival_pokemon, chosen_move)
+                if rival_pokemon.hp <= 0:
+                    print(f"Rival's {rival_pokemon.name} has fainted!")
+                    break
+    
         elif action == "2":
             if is_Trainer == True:
                 print("Can't escape from trainer battles")
@@ -127,10 +150,6 @@ def battle(player_pokemon, rival_pokemon):
         if rival_pokemon.hp == 0:
             print(f"{rival_pokemon.name} has fainted. You won the battle!")
             break
-
-        if not action == "2":
-            rival_move = random.choice(rival_pokemon.moves)
-            take_turn(rival_pokemon, player_pokemon, rival_move)
 
         if player_pokemon.hp == 0:
             print(f"Your pokemon fainted!")
