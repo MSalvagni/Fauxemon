@@ -4,9 +4,10 @@ import time
 class Pokemon:
     #These are the attributes that can be stores by the pokemon 
     #Can add moves, speed, defense, or whatever else
-    def __init__(self, name, hp):
+    def __init__(self, name, hp, moves):
         self.name = name
         self.hp = hp
+        self.moves = moves
 
     def __str__(self):
         return f"{self.name} (HP: {self.hp})"
@@ -14,8 +15,14 @@ class Pokemon:
     def take_damage(self, amount):
         self.hp = max(0,self.hp - amount)
 
-    def is_fainted(self):
-        return self.hp <= 0
+moves = {
+    "Tackle":(5, 10),
+    "Vine Whip": (8,12),
+    "Ember": (8, 12),
+    "Water Gun": (8,12)
+}
+    
+
 
 def ask_name():    
     player = input("What is your name? ")
@@ -23,10 +30,10 @@ def ask_name():
 
 
     while True:
-        first_answer = input("Is that right? (y/n) ")
-        if first_answer == "y":
+        answer = input("Is that right? (y/n) ").lower()
+        if answer == "y":
             return player
-        elif first_answer == "n":
+        elif answer == "n":
             player = input("What is your name? ")
             print(f"Your name is {player}")
         else:
@@ -34,9 +41,9 @@ def ask_name():
 
 def choose_starter():
     pokemons = [
-        Pokemon("Bulbasaur", 45),
-        Pokemon("Charmander", 39),
-        Pokemon("Squirtle", 44)
+        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"]),
+        Pokemon("Charmander", 39, ["Tackle", "Ember"]),
+        Pokemon("Squirtle", 44,["Tackle", "Water Gun"])
         ]
 
     type_advantage = {
@@ -44,6 +51,9 @@ def choose_starter():
         "Charmander": "Squirtle",
         "Squirtle": "Bulbasaur"
     }
+    
+    #store pokemon for faster lookup
+    pokemon_dict = {p.name: p for p in pokemons}
 
     print("Choose your starter Pokemon")
     for i, poke in enumerate(pokemons, start=1):
@@ -56,12 +66,12 @@ def choose_starter():
 
             #Confirmation loop
             while True:
-                confirm = input(f"Are you sure about {chosen_pokemon}? (y/n) " )
+                confirm = input(f"Are you sure about {chosen_pokemon}? (y/n) " ).lower()
                 if confirm == "y":
                     print(f"You chose {chosen_pokemon.name}!")
                     time.sleep(1)
                     rival_choice = type_advantage[chosen_pokemon.name]
-                    rival_pokemon = next(p for p in pokemons if p.name == rival_choice)
+                    rival_pokemon = pokemon_dict[rival_choice]
                     print(f"Your rival has chosen {rival_pokemon.name}.")
                     time.sleep(1)
                     return chosen_pokemon, rival_pokemon  
@@ -73,25 +83,41 @@ def choose_starter():
         else:
             print("Make a valid choice")
 
-def take_turn(attacker, defender):
-    damage = random.randint(5, 10)
+def take_turn(attacker, defender, move_name):
+    low, high = moves[move_name]
+    damage = random.randint(low, high)
     defender.take_damage(damage)
-    print(f"{attacker.name} attacks! {defender.name} loses {damage} HP")
+    print(f"{attacker.name} attacks with {move_name}! {defender.name} loses {damage} HP")
     time.sleep(1)
     print(f"{defender.name} has {defender.hp} HP left!\n")
     time.sleep(1)
 
-
 def battle(player_pokemon, rival_pokemon):
+    is_Trainer = True
     print(f"Battle is about to begin between your {player_pokemon.name} and your rival's {rival_pokemon.name}")
     time.sleep(1)
 
-    while not player_pokemon.hp == 0 and not rival_pokemon.hp == 0:
+    while player_pokemon.hp > 0 and rival_pokemon.hp > 0:
         print(f"Your pokemon: {player_pokemon}")
         print(f"Rival's pokemon: {rival_pokemon}\n")
-        action = input("Choose your action:\n1) Attack\n")
+        action = input("Choose your action:\n1) Attack\n2) Flee\n>")
+        #pick which move to use
         if action == "1":
-            take_turn(player_pokemon, rival_pokemon)
+            print("Choose a move:")
+            for i, move in enumerate(player_pokemon.moves, start=1):
+                print(f"{i}) {move}")
+
+            choice = int(input(">")) - 1
+            chosen_move = player_pokemon.moves[choice]
+
+            
+            take_turn(player_pokemon, rival_pokemon, chosen_move)
+        elif action == "2":
+            if is_Trainer == True:
+                print("Can't escape from trainer battles")
+            else:
+                print("Got Away Safely!")
+                break
         else:
             print("Make a valid choice")
             continue
@@ -102,7 +128,9 @@ def battle(player_pokemon, rival_pokemon):
             print(f"{rival_pokemon.name} has fainted. You won the battle!")
             break
 
-        take_turn(rival_pokemon, player_pokemon)
+        if not action == "2":
+            rival_move = random.choice(rival_pokemon.moves)
+            take_turn(rival_pokemon, player_pokemon, rival_move)
 
         if player_pokemon.hp == 0:
             print(f"Your pokemon fainted!")
