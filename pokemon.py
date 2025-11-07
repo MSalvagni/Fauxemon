@@ -1,20 +1,36 @@
 import random
 import time
 
+
 class Pokemon:
     #These are the attributes that can be stores by the pokemon 
     #Can add moves, speed, defense, or whatever else
-    def __init__(self, name, hp, moves, speed):
+    def __init__(self, name, hp, moves, speed, level, xp):
         self.name = name
         self.hp = hp
         self.moves = moves
         self.speed = speed
+        self.level = level
+        self.xp = xp
+        self.xp_to_next_lvl = 30 * level
 
     def __str__(self):
-        return f"{self.name} (HP: {self.hp})"
+        return f"{self.name} (HP: {self.hp}) (LVL:{self.level}) ({self.xp}/{self.xp_to_next_lvl}XP)"
     
     def take_damage(self, amount):
         self.hp = max(0,self.hp - amount)
+
+    def gain_xp(self, amount):
+        print(f"{self.name} gained {amount} XP!")
+        self.xp += amount
+        
+        while self.xp >= self.xp_to_next_lvl:
+            self.xp -= self.xp_to_next_lvl
+            self.level += 1
+            self.xp_to_next_lvl = 30 * self.level
+            print(f"{self.name} leveled up to {self.level}!")
+
+
 
 moves = {
     "Tackle":(5, 10, 90),
@@ -42,9 +58,9 @@ def ask_name():
 
 def choose_starter():
     pokemons = [
-        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"], 45),
-        Pokemon("Charmander", 39, ["Tackle", "Ember"], 65),
-        Pokemon("Squirtle", 44,["Tackle", "Water Gun"], 43)
+        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"], 45, 1, 0),
+        Pokemon("Charmander", 39, ["Tackle", "Ember"], 65, 1, 0),
+        Pokemon("Squirtle", 44,["Tackle", "Water Gun"], 43, 1, 0)
         ]
 
     type_advantage = {
@@ -100,10 +116,11 @@ def battle(player_pokemon, rival_pokemon):
     is_Trainer = True
     print(f"Battle is about to begin between your {player_pokemon.name} and your rival's {rival_pokemon.name}")
     time.sleep(1)
+    did_win = False
 
     while player_pokemon.hp > 0 and rival_pokemon.hp > 0:
-        print(f"Your pokemon: {player_pokemon}")
-        print(f"Rival's pokemon: {rival_pokemon}\n")
+        print(f"Your pokemon: {player_pokemon.name} HP:{player_pokemon.hp}")
+        print(f"Rival's pokemon: {rival_pokemon.name} HP:{rival_pokemon.hp}\n")
         action = input("Choose your action:\n1) Attack\n2) Flee\n>")
         #pick which move to use
         if action == "1":
@@ -120,6 +137,7 @@ def battle(player_pokemon, rival_pokemon):
                 take_turn(player_pokemon, rival_pokemon, chosen_move)
                 if rival_pokemon.hp <= 0:
                     print(f"Rival's {rival_pokemon.name} has fainted")
+                    did_win = True
                     break
                 take_turn(rival_pokemon, player_pokemon, rival_move)
                 if player_pokemon.hp <= 0:
@@ -133,6 +151,7 @@ def battle(player_pokemon, rival_pokemon):
                 take_turn(player_pokemon, rival_pokemon, chosen_move)
                 if rival_pokemon.hp <= 0:
                     print(f"Rival's {rival_pokemon.name} has fainted!")
+                    did_win = True
                     break
     
         elif action == "2":
@@ -145,16 +164,8 @@ def battle(player_pokemon, rival_pokemon):
             print("Make a valid choice")
             continue
 
-
-        #Check if a pokemon faints
-        if rival_pokemon.hp == 0:
-            print(f"{rival_pokemon.name} has fainted. You won the battle!")
-            break
-
-        if player_pokemon.hp == 0:
-            print(f"Your pokemon fainted!")
-            break
-
+    if did_win:
+        player_pokemon.gain_xp(30)
 
 def start_game():
     player_name = ask_name()
