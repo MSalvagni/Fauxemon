@@ -5,9 +5,10 @@ import time
 class Pokemon:
     #These are the attributes that can be stores by the pokemon 
     #Can add moves, speed, defense, or whatever else
-    def __init__(self, name, hp, moves, speed, level, xp):
+    def __init__(self, name, hp, max_hp, moves, speed, level, xp):
         self.name = name
         self.hp = hp
+        self.max_hp = max_hp
         self.moves = moves
         self.speed = speed
         self.level = level
@@ -30,11 +31,17 @@ class Pokemon:
             self.xp_to_next_lvl = 30 * self.level
             print(f"{self.name} leveled up to {self.level}!")
 
+            hp_increase = 5
+            self.max_hp += hp_increase 
+
+            self.hp = self.max_hp
+            print(f"HP: {self.max_hp}")
+
 
 
 moves = {
     "Tackle":(5, 10, 90),
-    "Vine Whip": (8,12, 90),
+    "Vine Whip": (8, 12, 90),
     "Ember": (8, 12, 90),
     "Water Gun": (8, 12, 90)
 }
@@ -58,9 +65,9 @@ def ask_name():
 
 def choose_starter():
     pokemons = [
-        Pokemon("Bulbasaur", 45, ["Tackle", "Vine Whip"], 45, 1, 0),
-        Pokemon("Charmander", 39, ["Tackle", "Ember"], 65, 1, 0),
-        Pokemon("Squirtle", 44,["Tackle", "Water Gun"], 43, 1, 0)
+        Pokemon("Bulbasaur", 45, 45, ["Tackle", "Vine Whip"], 45, 1, 0),
+        Pokemon("Charmander", 39, 39, ["Tackle", "Ember"], 65, 1, 0),
+        Pokemon("Squirtle", 44, 44, ["Tackle", "Water Gun"], 43, 1, 0)
         ]
 
     type_advantage = {
